@@ -33,8 +33,7 @@ def generator(z, output_Dim, is_train=False, reuse=False):
         n = ElementwiseLayer([n, temp], tf.add, name='g_add1')
 
         n = Conv2d(n, 64, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, name='g_n128s1/1')
-        n = Subpixel
-        Conv2d(n, scale=2, n_out_channel=None, act=tf.nn.relu, name='g_pixelshufflerx2/1')
+        n = SubpixelConv2d(n, scale=2, n_out_channel=None, act=tf.nn.relu, name='g_pixelshufflerx2/1')
 
         n = Conv2d(n, 64, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, name='g_n128s1/2')
         n = SubpixelConv2d(n, scale=2, n_out_channel=None, act=tf.nn.relu, name='g_pixelshufflerx2/2')
@@ -198,39 +197,39 @@ def generator_shallow(z, output_Dim, is_train=False, reuse=False):
         n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_fc1/bn')
         n = ReshapeLayer(n, [-1, int(output_Dim / 32), int(output_Dim / 32), 64], name='g_fc_reshape')
 
-        n = DeConv2d(n, 64, (3, 3), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_n64s2/ct/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n64s2/b/m')
+        n = DeConv2d(n, 64, (3, 3), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_convt1/convt')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_convt1/bn')
 
         # /16
 
-        n = DeConv2d(n, 48, (5, 5), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_n48s2/ct/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n48s2/b/m')
+        n = DeConv2d(n, 48, (5, 5), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_convt2/convt')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_convt2/bn')
 
         # /8
 
-        n = DeConv2d(n, 48, (7, 7), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_n48s2/ct2/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n48s2/b2/m')
+        n = DeConv2d(n, 48, (7, 7), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_convt3/convt')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_convt3/bn')
 
         temp = n
 
         # /4
 
-        n = Conv2d(n, 48, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, b_init=b_init, name='g_n48s1/c1/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n48s1/b1/m')
+        n = Conv2d(n, 48, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, b_init=b_init, name='g_conv4/conv')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_conv4/bn')
 
-        n = Conv2d(n, 48, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, b_init=b_init, name='g_n48s1/c2/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n48s1/b2/m')
-        n = ElementwiseLayer([n, temp], tf.add, name='g_add2')
+        n = Conv2d(n, 48, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, b_init=b_init, name='g_conv5/conv')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_conv5/bn')
+        n = ElementwiseLayer([n, temp], tf.add, name='g_resAdd')
 
-        n = DeConv2d(n, 48, (5, 5), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_n48s2/ct/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n48s2/b3/m')
+        n = DeConv2d(n, 48, (5, 5), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_convt6/convt')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_convt6/bn')
 
         # /2
 
-        n = DeConv2d(n, 32, (5, 5), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_n32s2/ct/m')
-        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_n32s2/b/m')
+        n = DeConv2d(n, 32, (5, 5), strides=(2, 2), act=tf.identity, padding='SAME', W_init=w_init, b_init=b_init, name='g_convt7/convt')
+        n = BatchNormLayer(n, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='g_convt7/bn')
 
-        n = Conv2d(n, 3, (1, 1), (1, 1), act=tf.nn.tanh, padding='SAME', W_init=w_init, name='out')
+        n = Conv2d(n, 3, (1, 1), (1, 1), act=tf.nn.tanh, padding='SAME', W_init=w_init, name='g_out')
 
         return n
 
